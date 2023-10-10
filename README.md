@@ -1,133 +1,133 @@
 # Iconify API
 
-This repository contains Iconify API script. It is a HTTP server, written in Node.js that:
+该存储库包含 Iconify API 脚本。它是一个使用 Node.js 编写的 HTTP 服务器，具有以下功能：
 
--   Provides icon data, used by icon components that load icon data on demand (instead of bundling thousands of icons).
--   Generates SVG, which you can link to in HTML or stylesheet.
--   Provides search engine for hosted icons, which can be used by icon pickers.
+- 提供图标数据，供按需加载图标数据的图标组件使用（而不是捆绑成千上万个图标）。
+- 生成 SVG，您可以在 HTML 或样式表中链接到它。
+- 提供托管图标的搜索引擎，可供图标选择器使用。
 
 ## Docker
 
-To build a Docker image, run `./docker.sh`.
+要构建 Docker 镜像，请运行 `./docker.sh`。
 
-If you want to customise config, fork this repo, customise source code, then build Docker image and deploy API.
+如果您想自定义配置，请先 fork 该存储库，自定义源代码，然后构建 Docker 镜像并部署 API。
 
-To run a Docker image, run `docker run -d -p 3000:3000 iconify/api` (change first 3000 to port you want to run API on).
+要运行 Docker 镜像，请运行 `docker run -d -p 3000:3000 iconify/api`（将第一个 3000 更改为您要运行 API 的端口）。
 
-NPM commands for working with Docker images:
+与 Docker 镜像一起使用的 NPM 命令：
 
--   `npm run docker:build` - builds Docker image.
--   `npm run docker:start` - starts Docker container on port 3000.
--   `npm run docker:stop` - stops all Iconify API Docker containers.
--   `npm run docker:cleanup` - removes all unused Iconify API Docker containers.
+- `npm run docker:build` - 构建 Docker 镜像。
+- `npm run docker:start` - 在端口 3000 上启动 Docker 容器。
+- `npm run docker:stop` - 停止所有 Iconify API Docker 容器。
+- `npm run docker:cleanup` - 删除所有未使用的 Iconify API Docker 容器。
 
-There is no command to remove unused images because of Docker limitations. You need to do it manually from Docker Desktop or command line.
+由于 Docker 的限制，没有命令来删除未使用的镜像。您需要手动从 Docker Desktop 或命令行中进行删除。
 
-## How to use it
+## 如何使用
 
-First, you need to install NPM dependencies and run build script:
+首先，您需要安装 NPM 依赖项并运行构建脚本：
 
 ```
 npm install
 npm run build
 ```
 
-Then you can start server:
+然后可以启动服务器：
 
 ```
 npm run start
 ```
 
-By default, server will:
+默认情况下，服务器将：
 
--   Automatically load latest icons from [`@iconify/json`](https://github.com/iconify/icon-sets).
--   Load custom icon sets from `icons` directory.
--   Serve data on port 3000.
+- 自动从 [`@iconify/json`](https://github.com/iconify/icon-sets) 加载最新的图标。
+- 从 `icons` 目录加载自定义图标集。
+- 在端口 3000 上提供数据。
 
-You can customise API to:
+您可以自定义 API 的行为：
 
--   Serve custom icon sets, loaded from various sources.
--   Run on different port.
--   Disable search engine if you do not need it, reducing memory usage.
+- 提供自定义图标集，从各种来源加载。
+- 在不同的端口上运行。
+- 如果您不需要搜索引擎，可以禁用它以减少内存使用。
 
-## Port and HTTPS
+## 端口和 HTTPS
 
-It is recommended that you do not run API on port 80. Server can handle pretty much anything, but it is still not as good as a dedicated solution such as nginx.
+建议不要在端口 80 上运行 API。服务器可以处理几乎任何端口，但仍然不如专用解决方案（如 nginx）好。
 
-Run API on obscure port, hidden from outside world with firewall rules, use nginx as reverse proxy.
+在不为外界暴露的不常用端口上运行 API，使用防火墙规则隐藏，使用 nginx 作为反向代理。
 
-HTTPS is not supported. It is a very resource intensive process, better handled by a dedicated solution such as nginx. Use nginx to run as HTTP and HTTPS server, forward queries to API HTTP server on hidden port such as default port 3000.
+不支持 HTTPS。这是一个非常占用资源的过程，最好由专用解决方案（如 nginx）处理。使用 nginx 作为 HTTP 和 HTTPS 服务器，在隐藏端口（如默认端口 3000）上转发查询到 API HTTP 服务器。
 
-## Configuration
+## 配置
 
-There are several ways to change configuration:
+有几种方式可以更改配置：
 
--   Editing files in `src/config/`, then rebuilding script. This is required for some advanced options, such as using API with custom icons.
--   Using environment variables, such as `PORT=3100 npm run start`.
--   Using `.env` file to store environment variables.
+- 编辑 `src/config/` 目录中的文件，然后重新构建脚本。这对于一些高级选项（例如使用具有自定义图标的 API）是必需的。
+- 使用环境变量，例如 `PORT=3100 npm run start`。
+- 使用 `.env` 文件存储环境变量。
 
-### Env options
+### 环境变量选项
 
-Options that can be changed with environment variables and their default values (you can find all of them in `src/config/app.ts`):
+可以使用环境变量更改的选项及其默认值（您可以在 `src/config/app.ts` 中找到所有选项）：
 
--   `HOST=0.0.0.0`: IP address or hostname HTTP server listens on.
--   `PORT=3000`: port HTTP server listens on.
--   `ICONIFY_SOURCE=full`: source for Iconify icon sets. Set to `full` to use `@iconify/json` package, `split` to use `@iconify-json/*` packages, `none` to use only custom icon sets.
--   `REDIRECT_INDEX=https://iconify.design/`: redirect for `/` route. API does not serve any pages, so index page redirects to main website.
--   `STATUS_REGION=`: custom text to add to `/version` route response. Iconify API is ran on network of servers, visitor is routed to closest server. It is used to tell which server user is connected to.
--   `ENABLE_ICON_LISTS=true`: enables `/collections` route that lists icon sets and `/collection?prefix=whatever` route to get list of icons. Used by icon pickers. Disable it if you are using API only to serve icon data.
--   `ENABLE_SEARCH_ENGINE=true`: enables `/search` route. Requires `ENABLE_ICON_LISTS` to be enabled.
--   `ALLOW_FILTER_ICONS_BY_STYLE=true`: allows searching for icons based on fill or stroke, such as adding `style=fill` to search query. This feature uses a bit of memory, so it can be disabled. Requires `ENABLE_SEARCH_ENGINE` to be enabled.
+- `HOST=0.0.0.0`：HTTP 服务器监听的 IP 地址或主机名。
+- `PORT=3000`：HTTP 服务器监听的端口。
+- `ICONIFY_SOURCE=full`：Iconify 图标集的来源。设置为 `full` 使用 `@iconify/json` 包，`split` 使用 `@iconify-json/*` 包，`none` 仅使用自定义图标集。
+- `REDIRECT_INDEX=https://iconify.design/`：`/` 路由的重定向。API 不提供任何页面，因此索引页面重定向到主网站。
+- `STATUS_REGION=`：要添加到 `/version` 路由响应的自定义文本。Iconify API 在服务器网络上运行，访问者被路由到最近的服务器。用于告诉用户连接到的服务器。
+- `ENABLE_ICON_LISTS=true`：启用列出图标集的 `/collections` 路由和 `/collection?prefix=whatever` 路由以获取图标列表。用于图标选择器。如果仅使用 API 提供图标数据，则禁用它。
+- `ENABLE_SEARCH_ENGINE=true`：启用 `/search` 路由。需要启用 `ENABLE_ICON_LISTS`。
+- `ALLOW_FILTER_ICONS_BY_STYLE=true`：允许根据填充或描边搜索图标，例如在搜索查询中添加 `style=fill`。此功能会使用一些内存，因此可以禁用它。需要启用 `ENABLE_SEARCH_ENGINE`。
 
-### Memory management
+### 内存管理
 
-By default, API will use memory management functions. It stores only recently used icons in memory, reducing memory usage.
-000
-If your API gets a lot of traffic (above 1k requests per minute), it is better to not use memory management. With such high number of queries, disc read/write operations might cause degraded performance. API can easily handle 10 times more traffic on a basic VPS if everything is in memory and can be accessed instantly.
+默认情况下，API 将使用内存管理功能。它仅在内存中存储最近使用的图标，从而减少内存使用。
 
-See [memory management in full API docs](https://docs.iconify.design/api/hosting-js/config.html).
+如果您的 API 流量很大（每分钟超过 1,000 个请求），最好不要使用内存管理。在如此高的查询数量下，磁盘读/写操作可能会导致性能下降。如果所有内容都在内存中并可以立即访问，API 可以在基本 VPS 上轻松处理多达 10 倍的流量。
 
-### Updating icons
+有关完整 API 文档中的内存管理，请参阅[内存管理](https://docs.iconify.design/api/hosting-js/config.html)。
 
-Icons are automatically updated when server starts.
+### 更新图标
 
-In addition to that, API can update icon sets without restarting server.
+服务器启动时会自动更新图标。
 
-To enable automatic update, you must set `APP_UPDATE_SECRET` environment variable. Without it, update will not work.
+除此之外，API 还可以在不重新启动服务器的情况下更新图标集。
 
--   `ALLOW_UPDATE=true`: enables `/update` route.
--   `UPDATE_REQUIRED_PARAM=secret`: key from secret key/value pair. Cannot be empty.
--   `APP_UPDATE_SECRET=`: value from secret key/value pair. Cannot be empty.
--   `UPDATE_THROTTLE=60`: number of seconds to wait before running update.
+要启用自动更新，您必须设置 `APP_UPDATE_SECRET` 环境变量。如果没有设置，更新将无法工作。
 
-To trigger icon sets update, open `/update?foo=bar`, where `foo` is value of `UPDATE_REQUIRED_PARAM`, `bar` is value of `APP_UPDATE_SECRET`.
+- `ALLOW_UPDATE=true`：启用 `/update` 路由。
+- `UPDATE_REQUIRED_PARAM=secret`：来自密钥/值对的密钥。不能为空。
+- `APP_UPDATE_SECRET=`：来自密钥/值对的值。不能为空。
+- `UPDATE_THROTTLE=60`：运行更新之前等待的秒数。
 
-Update will not be triggered immediately, it will be ran after `UPDATE_THROTTLE` seconds. This is done to prevent multiple checks when update is triggered several times in a row by something like GitHub hooks.
+要触发图标集更新，请打开 `/update?foo=bar`，其中 `foo` 是 `UPDATE_REQUIRED_PARAM` 的值，`bar` 是 `APP_UPDATE_SECRET` 的值。
 
-If update is triggered while update process is already running (as in, source was checked for update, but download is still in progress), another update check will be ran after currently running update ends.
+更新不会立即触发，而是在 `UPDATE_THROTTLE` 秒后运行。这样做是为了防止在连续多次触发更新（例如 GitHub 钩子）时进行多次检查。
 
-Response to `/update` route is always the same, regardless of outcome. This is done to make it impossible to try to guess key/value pair or even see if route is enabled. To see actual result, you need to check console. Successful request and update process will be logged.
+如果在更新过程已经运行时（即已检查源以进行更新，但下载仍在进行中），则在当前运行的更新结束后将运行另一个更新检查。
 
-### HTTP headers
+`/update` 路由的响应始终相同，无论结果如何。这样做是为了防止尝试猜测密钥/值对，甚至查看路由是否启用。要查看实际结果，您需要检查控制台。成功的请求和更新过程将被记录。
 
-By default, server sends the following HTTP headers:
+### HTTP 头
 
--   Various CORS headers, allowing access from anywhere.
--   Cache headers to cache responses for 604800 seconds (7 days).
+默认情况下，服务器发送以下 HTTP 头：
 
-To change headers, edit `httpHeaders` variable in `src/config/app.ts`, then rebuild script.
+- 各种 CORS 头，允许从任何地方访问。
+- 缓存头，将响应缓存 604800 秒（7 天）。
+
+要更改头，请编辑 `src/config/app.ts` 中的 `httpHeaders` 变量，然后重新构建脚本。
 
 ## Node vs PHP
 
-Previous version of API was also available as PHP script. This has been discontinued. Node app performs much faster, can handle thousands of queries per second and uses less memory.
+先前版本的 API 也作为 PHP 脚本提供。这已经停止使用。Node 应用程序执行速度更快，可以处理每秒数千个查询，并且使用的内存更少。
 
-## Full documentation
+## 完整文档
 
-This file is basic.
+此文件是基本的。
 
-Full documentation is available on [Iconify documentation website](https://docs.iconify.design/api/).
+完整的文档可在[Iconify 文档网站](https://docs.iconify.design/api/)上找到。
 
-## Sponsors
+## 赞助商
 
 <p align="center">
   <a href="https://github.com/sponsors/cyberalien">
@@ -135,12 +135,10 @@ Full documentation is available on [Iconify documentation website](https://docs.
   </a>
 </p>
 
-## Licence
+## 许可证
 
-Iconify API is licensed under MIT license.
+Iconify API 使用 MIT 许可证。
 
 `SPDX-License-Identifier: MIT`
 
-This licence does not apply to icons hosted on API and files generated by API. You can host icons with any license, without any restrictions. Common decency applies, such as not hosting pirated versions of commercial icon sets (not sure why anyone would use commercial icon sets when so many excellent open source icon sets are available, but anyway...).
-
-© 2022 Vjacheslav Trushkin / Iconify OÜ
+此许可证不适用于托管在 API 上的图标和 API 生成的文件。您可以以任何许可证托管图标，没有任何限制。请遵守公共道德，不要托管盗版商业图标集（虽然不确定为什么有人会使用商业图标集，因为有许多优秀的开源图标集可用）。
